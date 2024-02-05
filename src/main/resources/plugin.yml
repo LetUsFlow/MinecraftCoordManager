@@ -1,0 +1,9 @@
+name: CoordsManager
+version: '${version}'
+main: net.letusflow.coordsmanager.Main
+api-version: '1.20'
+author: "Florentin Schäfer"
+
+commands:
+  coords:
+    description: Used to save and list coordinates
