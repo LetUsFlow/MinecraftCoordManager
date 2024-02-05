@@ -17,10 +17,10 @@ public final class Main extends JavaPlugin {
             dbfile.getParentFile().mkdirs();
         }
 
-        try (Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbfile.getPath())) {
+        try {
+            Connection conn = DriverManager.getConnection("jdbc:sqlite:" + dbfile.getPath());
             if (conn != null) {
                 this.conn = conn;
-
                 Statement stmt = conn.createStatement();
                 stmt.execute("CREATE TABLE IF NOT EXISTS coordinates (\n" +
                         "uuid STRING NOT NULL PRIMARY KEY,\n" +
