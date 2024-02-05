@@ -3,13 +3,17 @@ package net.letusflow.coordsmanager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class CoordsCommand implements CommandExecutor {
@@ -20,7 +24,7 @@ public class CoordsCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if (commandSender instanceof Player) {
             Player player = (Player) commandSender;
-            logger.info(player.getUniqueId().toString());
+
             if (strings.length > 0) {
                 try {
 
@@ -38,12 +42,33 @@ public class CoordsCommand implements CommandExecutor {
                             return true;
                         case "add":
                             player.sendMessage("Gonna add some coords");
+                            if (strings.length == 5) {
+                                try {
+                                    pstmt = conn.prepareStatement("INSERT INTO coordinates (uuid, note, coordx, coordy, coordz) VALUES (?,?,?,?,?)");
+                                    pstmt.setString(1, player.getUniqueId().toString());
+                                    pstmt.setString(2, strings[1]); // note
+                                    pstmt.setInt(3, Integer.parseInt(strings[2])); // x
+                                    pstmt.setInt(4, Integer.parseInt(strings[3])); // y
+                                    pstmt.setInt(5, Integer.parseInt(strings[4])); // z
+                                    pstmt.executeUpdate(); // TODO: handle return value
+                                    return true;
 
-                            //PreparedStatement pstmt = conn.prepareStatement("INSERT INTO ");
+                                } catch (NumberFormatException nfe) {
+                                    player.sendMessage("Your command is a failure and your are probably one as well >:)");
+                                    player.sendMessage("(Could not parse given coordinates as )");
+                                }
 
+                            }
                             break;
                         case "remove":
-                            player.sendMessage("Gonna remove some coords");
+                            if (strings.length == 2) {
+                                player.sendMessage("Gonna remove some coords");
+                                pstmt = conn.prepareStatement("DELETE FROM coordinates WHERE uuid=? AND note=?");
+                                pstmt.setString(1, player.getUniqueId().toString());
+                                pstmt.setString(2, strings[1]);
+                                pstmt.executeUpdate(); // TODO: handle return value
+                                return true;
+                            }
                             break;
                     }
                 } catch (SQLException e) {

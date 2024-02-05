@@ -23,12 +23,12 @@ public final class Main extends JavaPlugin {
                 this.conn = conn;
                 Statement stmt = conn.createStatement();
                 stmt.execute("CREATE TABLE IF NOT EXISTS coordinates (\n" +
-                        "uuid STRING NOT NULL PRIMARY KEY,\n" +
+                        "uuid STRING NOT NULL,\n" +
                         "note STRING NOT NULL,\n" +
                         "coordx INTEGER NOT NULL,\n" +
                         "coordy INTEGER NOT NULL,\n" +
-                        "coordz INTEGER NOT NULL\n" +
-                        ");");
+                        "coordz INTEGER NOT NULL,\n" +
+                        "PRIMARY KEY(uuid, note));");
 
                 getCommand("coords").setExecutor(new CoordsCommand(getLogger(), conn));
             }
