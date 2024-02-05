@@ -1,4 +1,4 @@
-package net.letusflow.coordsmanager;
+package net.letusflow.coordmanager;
 
 import org.bukkit.plugin.java.JavaPlugin;
 

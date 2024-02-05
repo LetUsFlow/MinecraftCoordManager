@@ -1,6 +1,6 @@
-name: CoordsManager
+name: CoordManager
 version: '${version}'
-main: net.letusflow.coordsmanager.Main
+main: net.letusflow.coordmanager.Main
 api-version: '1.20'
 author: "Florentin Schäfer"
 

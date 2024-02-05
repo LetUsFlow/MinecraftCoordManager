@@ -1,4 +1,4 @@
-package net.letusflow.coordsmanager;
+package net.letusflow.coordmanager;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -12,11 +12,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class CoordsCommand implements CommandExecutor {
+public class CoordsCommand implements CommandExecutor, TabCompleter {
     private final Logger logger;
     private final Connection conn;
 
@@ -85,5 +84,13 @@ public class CoordsCommand implements CommandExecutor {
     public CoordsCommand(Logger logger, Connection conn) {
         this.logger = logger;
         this.conn = conn;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (args.length <= 1) {
+            return List.of("list", "add", "remove");
+        }
+        return List.of();
     }
 }
