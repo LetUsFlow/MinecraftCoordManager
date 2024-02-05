@@ -12,7 +12,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -30,60 +29,91 @@ public class CoordsCommand implements CommandExecutor, TabCompleter {
 
                     switch (strings[0]) {
                         case "list":
-                            player.sendMessage("Gonna list some coords");
-
                             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM coordinates WHERE uuid = ?");
                             pstmt.setString(1, player.getUniqueId().toString());
                             ResultSet rs = pstmt.executeQuery();
 
+                            int ct = 0;
                             while (rs.next()) {
                                 player.sendMessage(rs.getString("note") + ": " + rs.getInt("coordx") + " " + rs.getInt("coordy") + " " + rs.getInt("coordz"));
+                                ct++;
                             }
+
+                            if (ct == 0) {
+                                player.sendMessage("You don't have any stored coordinates");
+                            }
+
                             return true;
                         case "add":
-                            player.sendMessage("Gonna add some coords");
                             if (strings.length == 5) {
                                 try {
                                     pstmt = conn.prepareStatement("INSERT INTO coordinates (uuid, note, coordx, coordy, coordz) VALUES (?,?,?,?,?)");
                                     pstmt.setString(1, player.getUniqueId().toString());
                                     pstmt.setString(2, strings[1]); // note
 
+                                    int posX;
+                                    int posY;
+                                    int posZ;
+
                                     if (strings[2].equals("~")) { // x
-                                        pstmt.setInt(3, (int)player.getX());
+                                        posX = (int)player.getX();
                                     } else {
-                                        pstmt.setInt(3, Integer.parseInt(strings[2]));
+                                        posX = Integer.parseInt(strings[2]);
                                     }
                                     if (strings[3].equals("~")) { // y
-                                        pstmt.setInt(4, (int)player.getY());
+                                        posY = (int)player.getY();
                                     } else {
-                                        pstmt.setInt(4, Integer.parseInt(strings[3]));
+                                        posY = Integer.parseInt(strings[3]);
                                     }
                                     if (strings[4].equals("~")) { // z
-                                        pstmt.setInt(5, (int)player.getZ());
+                                        posZ = (int)player.getZ();
                                     } else {
-                                        pstmt.setInt(5, Integer.parseInt(strings[4]));
+                                        posZ = Integer.parseInt(strings[4]);
                                     }
 
-                                    pstmt.executeUpdate(); // TODO: handle return value
+                                    pstmt.setInt(3,posX);
+                                    pstmt.setInt(4,posY);
+                                    pstmt.setInt(5,posZ);
+
+                                    if (pstmt.executeUpdate() != 0) {
+                                        player.sendMessage(String.format("Successfully added coordinates %d %d %d :)", posX, posY, posZ));
+                                    } else {
+                                        player.sendMessage("Couldn't add specified coordinates :(");
+                                        player.sendMessage("The note used in your command probably alread exists");
+                                    }
                                     return true;
 
                                 } catch (NumberFormatException nfe) {
-                                    player.sendMessage("Your command is a failure and your are probably one as well >:)");
-                                    player.sendMessage("(Could not parse given coordinates as )");
+                                    player.sendMessage("Could not parse given coordinates");
                                 }
 
                             }
                             break;
                         case "remove":
                             if (strings.length == 2) {
-                                player.sendMessage("Gonna remove some coords");
                                 pstmt = conn.prepareStatement("DELETE FROM coordinates WHERE uuid=? AND note=?");
                                 pstmt.setString(1, player.getUniqueId().toString());
                                 pstmt.setString(2, strings[1]);
-                                pstmt.executeUpdate(); // TODO: handle return value
+
+                                if (pstmt.executeUpdate() != 0) {
+                                    player.sendMessage("Successfully removed specified coordinates :)");
+                                } else {
+                                    player.sendMessage("Couldn't remove specified coordinates :(");
+                                    player.sendMessage("You probably have a typo in the command");
+                                }
                                 return true;
                             }
                             break;
+                        case "clear":
+                            pstmt = conn.prepareStatement("DELETE FROM coordinates WHERE uuid=?");
+                            pstmt.setString(1, player.getUniqueId().toString());
+
+                            if (pstmt.executeUpdate() != 0) {
+                                player.sendMessage("Successfully removed all coordinates :)");
+                            } else {
+                                player.sendMessage("Couldn't remove any coordinates BECAUSE YOU DIDN'T HAVE ANY STORED >:(");
+                            }
+                            return true;
                     }
                 } catch (SQLException e) {
                     logger.severe(e.getMessage());
@@ -93,6 +123,7 @@ public class CoordsCommand implements CommandExecutor, TabCompleter {
             }
         }
         commandSender.sendMessage("Your command is a failure and your are probably one as well >:)");
+        commandSender.sendMessage("aka Syntax Error");
         return false;
     }
 
@@ -103,9 +134,9 @@ public class CoordsCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        System.out.println(Arrays.toString(args));
+
         if (args.length == 1) {
-            return List.of("list", "add", "remove");
+            return List.of("list", "add", "remove", "clear");
         }
         if (args.length >= 2 && args[0].equals("add")) {
             if (args.length == 2) {
